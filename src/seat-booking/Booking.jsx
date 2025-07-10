@@ -5,46 +5,73 @@ import Legend from './Legend '
 import SeatMap from './SeatMap'
 import BookingSummary from './BookingSummary '
 import BlockSeatsButton from './BlockSeatsButton '
+import Notification from './Notification'
 import './seats.css'
 
 const Booking = () => {
 	const [theatreSeats, setTheatreSeats] = React.useState(seats)
 	const [selectedSeats, setSelectedSeats] = React.useState([])
+	// --- NEW: Notification State ---
+	const [notification, setNotification] = React.useState({ message: '', type: '' })
+	const notificationTimeoutRef = React.useRef(null) // Ref to store timeout ID
+
+	// --- NEW: Function to show notification ---
+	const showNotification = (message, type = 'success', duration = 3000) => {
+		// Clear any existing timeout
+		if (notificationTimeoutRef.current) {
+			clearTimeout(notificationTimeoutRef.current)
+		}
+		setNotification({ message, type })
+		notificationTimeoutRef.current = setTimeout(() => {
+			setNotification({ message: '', type: '' }) // Hide notification after duration
+		}, duration)
+	}
+
+	// --- NEW: Function to hide notification manually ---
+	const hideNotification = () => {
+		if (notificationTimeoutRef.current) {
+			clearTimeout(notificationTimeoutRef.current)
+		}
+		setNotification({ message: '', type: '' })
+	}
 
 	const handleSeatClick = (seat) => {
-		// If seat is already booked, do nothing
+		// If seat is already booked, show error notification
 		if (!seat.isAvailable && !selectedSeats.some((s) => s.id === seat.id)) {
-			alert(`Seat ${seat.id} is already booked.`)
+			showNotification(
+				`Seat ${seat.id} is already booked. Please choose another one.`,
+				'error'
+			)
 			return
 		}
 
-		// Check if the seat is already selected by the user
 		const isAlreadySelected = selectedSeats.some((s) => s.id === seat.id)
 
 		if (isAlreadySelected) {
 			// Deselect the seat
 			setSelectedSeats(selectedSeats.filter((s) => s.id !== seat.id))
+			showNotification(`Seat ${seat.id} deselected.`, 'success', 1500) // Shorter duration for deselection
 		} else {
 			// Select the seat (if available)
 			if (seat.isAvailable) {
 				setSelectedSeats([...selectedSeats, seat])
+				showNotification(`Seat ${seat.id} selected!`, 'success', 1500) // Shorter duration for selection
 			} else {
-				// This case is already handled above, but good for clarity
-				alert(`Seat ${seat.id} is already booked.`)
+				// This case is already handled above, but for redundancy/clarity
+				showNotification(`Seat ${seat.id} is already booked.`, 'error')
 			}
 		}
 	}
 
 	const handleBlockSeats = () => {
 		if (selectedSeats.length === 0) {
-			alert('Please select at least one seat to block.')
+			showNotification('Please select at least one seat to block.', 'error')
 			return
 		}
 
 		const updatedSeats = { ...theatreSeats }
 		let hasBlockedSeats = false
 
-		// Update the availability of selected seats in the main theatreSeats state
 		for (const category in updatedSeats) {
 			updatedSeats[category] = updatedSeats[category].map((seat) => {
 				if (selectedSeats.some((s) => s.id === seat.id)) {
@@ -58,15 +85,21 @@ const Booking = () => {
 		if (hasBlockedSeats) {
 			setTheatreSeats(updatedSeats)
 			setSelectedSeats([]) // Clear selected seats after blocking
-			alert('Seats successfully blocked!')
+			showNotification('Seats successfully blocked!', 'success', 5000) // Longer duration for success
 		} else {
-			alert('No new seats were selected to block.')
+			showNotification('No new seats were selected to block.', 'error')
 		}
 	}
 
 	return (
 		<div className='app-container'>
 			<Header />
+			{/* --- NEW: Render Notification component --- */}
+			<Notification
+				message={notification.message}
+				type={notification.type}
+				onClose={hideNotification}
+			/>
 			<div className='theatre-layout'>
 				<div className='seat-selection-area'>
 					<Legend />
