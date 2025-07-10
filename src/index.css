@@ -40,3 +40,46 @@ main {
 	padding: 1rem;
 	background-color: aqua;
 }
+
+.form h2 {
+	font-size: 2rem;
+}
+
+.form input[type='text'],
+.form button {
+	font-size: 1.3rem;
+	padding: 8px;
+}
+.form input[type='text'] {
+	border-top-left-radius: 12px;
+	border-bottom-left-radius: 12px;
+	border-right: none;
+}
+
+.form button {
+	border-top-right-radius: 12px;
+	border-bottom-right-radius: 12px;
+	border-left: none;
+}
+
+.item {
+	display: flex;
+	width: 300px;
+	justify-content: space-between;
+	margin-bottom: 6px;
+}
+.item span,
+.item p {
+	font-size: 1.2rem;
+}
+.item button {
+	border: none;
+	font-size: 1rem;
+	width: 48px;
+	height: 24px;
+	background-color: coral;
+}
+
+.item button:hover {
+	background-color: tomato;
+}
